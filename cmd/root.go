@@ -4,7 +4,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+)
+
+const (
+	PACKAGE_ENTITIES_DIR_NAME = "entities"
+)
+
+var (
+	blue     = color.New(color.FgBlue)
+	cyan     = color.New(color.FgCyan)
+	cyanBold = color.New(color.FgCyan, color.Bold)
+	blueBg   = color.New(color.BgBlue, color.FgWhite)
+	red      = color.New(color.FgRed)
 )
 
 var rootCmd = &cobra.Command{

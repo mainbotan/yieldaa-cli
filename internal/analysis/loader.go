@@ -9,7 +9,7 @@ import (
 // preset loader
 func LoadPreset(dir string) (*Package, error) {
 	// scan package.yml
-	packageData, err := loadConfig(dir)
+	packageData, err := LoadConfig(dir)
 	if err != nil {
 		return nil, fmt.Errorf("package load failed: %w", err)
 	}

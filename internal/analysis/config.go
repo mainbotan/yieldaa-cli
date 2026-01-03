@@ -11,7 +11,7 @@ import (
 )
 
 // loadConfig - try to load package.yml
-func loadConfig(dir string) (*Package, error) {
+func LoadConfig(dir string) (*Package, error) {
 	configPath := filepath.Join(dir, "package.yml")
 
 	config, err := os.ReadFile(configPath)
