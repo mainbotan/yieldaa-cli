@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var scanCmd = &cobra.Command{
+var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: " Package info",
 	Run: func(cmd *cobra.Command, args []string) {

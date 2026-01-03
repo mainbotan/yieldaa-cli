@@ -1,0 +1,135 @@
+package scan
+
+import (
+	"encoding/json"
+	"fmt"
+	"yieldaa/cli/internal/info"
+
+	"github.com/ghodss/yaml"
+)
+
+type ScannedEntity struct {
+	ContentHash string         // Хеш содержимого
+	JSONData    []byte         // YAML → JSON (готовый для сохранения)
+	ParsedData  map[string]any // ТОЛЬКО для быстрой валидации
+	Errors      []string       // Ошибки валидации
+	FatalError  error          // Фатальная ошибка чтения/конвертации
+}
+
+func ProcessEntity(file info.EntityFile, data []byte) ScannedEntity {
+	var result ScannedEntity
+
+	// xxHash64 вместо CRC32
+	result.ContentHash = calculateContentHash(data)
+
+	// .yml -> json without inter go struct
+	jsonData, err := yaml.YAMLToJSON(data)
+	if err != nil {
+		result.FatalError = fmt.Errorf("YAML→JSON: %w", err)
+		return result
+	}
+	result.JSONData = jsonData
+
+	// validation round 1
+	var parsed map[string]any
+	if err := json.Unmarshal(jsonData, &parsed); err != nil {
+		result.FatalError = fmt.Errorf("invalid JSON: %w", err)
+		return result
+	}
+	result.ParsedData = parsed
+
+	// validation round 2
+	if errs := validateStructure(parsed); len(errs) > 0 {
+		result.Errors = append(result.Errors, errs...)
+	}
+
+	// validation round 3
+	if errs := validateFieldsDirectly(parsed); len(errs) > 0 {
+		result.Errors = append(result.Errors, errs...)
+	}
+
+	return result
+}
+
+// structure validation
+func validateStructure(data map[string]any) []string {
+	var errors []string
+
+	required := []string{"module", "object", "property", "code", "name", "fields"}
+	for _, field := range required {
+		if _, exists := data[field]; !exists {
+			errors = append(errors, fmt.Sprintf("missing: %s", field))
+		}
+	}
+
+	if fields, ok := data["fields"].([]any); !ok {
+		errors = append(errors, "fields must be array")
+	} else if len(fields) == 0 {
+		errors = append(errors, "fields array empty")
+	}
+
+	return errors
+}
+
+// fields validation
+func validateFieldsDirectly(data map[string]any) []string {
+	var errors []string
+
+	fields, ok := data["fields"].([]any)
+	if !ok {
+		return []string{"fields is not array"}
+	}
+
+	seenCodes := make(map[string]bool)
+
+	for i, fieldAny := range fields {
+		field, ok := fieldAny.(map[string]any)
+		if !ok {
+			errors = append(errors, fmt.Sprintf("field[%d]: not object", i))
+			continue
+		}
+
+		code, typeStr := getFieldCodeAndType(field)
+		if code == "" {
+			errors = append(errors, fmt.Sprintf("field[%d]: missing code", i))
+			continue
+		}
+
+		if seenCodes[code] {
+			errors = append(errors, fmt.Sprintf("duplicate field code: %s", code))
+		}
+		seenCodes[code] = true
+
+		if !isValidType(typeStr) {
+			errors = append(errors, fmt.Sprintf("field %s: invalid type '%s'", code, typeStr))
+			continue
+		}
+
+		if pattern, ok := field["pattern"].(string); ok && pattern != "" {
+			if valid, errMsg := validatePattern(pattern); !valid {
+				errors = append(errors, fmt.Sprintf("field %s: %s", code, errMsg))
+			}
+		}
+
+		if min := getNumberValue(field, "min"); min != nil {
+			max := getNumberValue(field, "max")
+			if minMaxErrs := validateMinMax(min, max, typeStr); len(minMaxErrs) > 0 {
+				for _, err := range minMaxErrs {
+					errors = append(errors, fmt.Sprintf("field %s: %s", code, err))
+				}
+			}
+		}
+
+		if typeStr == "enum" {
+			if values, ok := field["values"].([]any); ok {
+				if valid, errMsg := validateEnumValues(values); !valid {
+					errors = append(errors, fmt.Sprintf("field %s: %s", code, errMsg))
+				}
+			} else {
+				errors = append(errors, fmt.Sprintf("field %s: enum requires values array", code))
+			}
+		}
+	}
+
+	return errors
+}

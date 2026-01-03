@@ -27,8 +27,8 @@ var rootCmd = &cobra.Command{
 
 // команды
 func init() {
+	rootCmd.AddCommand(infoCmd)
 	rootCmd.AddCommand(scanCmd)
-	rootCmd.AddCommand(checkCmd)
 }
 
 func Execute() {
