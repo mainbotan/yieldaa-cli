@@ -19,7 +19,7 @@ type Package struct {
 
 type PackageSum struct {
 	TotalSize     int64  `json:"total_size"`
-	EntitiesCount int32  `json:"entities_count"`
+	EntitiesCount int    `json:"entities_count"`
 	ControlHash   uint32 `json:"control_hash"`
 }
 
@@ -30,7 +30,7 @@ type EntityFile struct {
 	ContentHash string    `json:"content_hash,omitempty"`
 }
 
-// обход сущностей без чтения
+// обход сущностей без чтения содержимого
 func ScanEntities(dir string) ([]EntityFile, error) {
 	var files []EntityFile
 

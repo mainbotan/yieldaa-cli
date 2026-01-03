@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	PACKAGE_ENTITIES_DIR_NAME = "entities"
-)
-
 var (
 	blue     = color.New(color.FgBlue)
 	cyan     = color.New(color.FgCyan)
