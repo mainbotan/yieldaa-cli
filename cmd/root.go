@@ -25,6 +25,12 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// команды
+func init() {
+	rootCmd.AddCommand(scanCmd)
+	rootCmd.AddCommand(checkCmd)
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

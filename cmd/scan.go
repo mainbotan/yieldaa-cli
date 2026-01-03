@@ -21,7 +21,7 @@ var scanCmd = &cobra.Command{
 		}
 
 		// запуск сканирования
-		result, err := scan.LoadPackage(wd)
+		result, err := scan.ScanPackage(wd)
 		if err != nil {
 			red.Printf("Error scanning: %v\n", err)
 			os.Exit(1)
@@ -36,14 +36,3 @@ var scanCmd = &cobra.Command{
 		fmt.Printf("Hash:            0x%08X\n", result.Sum.ControlHash)
 	},
 }
-
-func init() {
-	rootCmd.AddCommand(scanCmd)
-}
-
-// // двухэтапный процессинг сущностей
-// s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-// s.Suffix = "Scanning package..."
-// s.Start()
-// s.Stop()
-// fmt.Println("✅ Package scan completed!")

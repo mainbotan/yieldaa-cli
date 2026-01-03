@@ -10,7 +10,7 @@ const (
 	PACKAGE_ENTITIES_DIR_NAME = "entities"
 )
 
-func LoadPackage(wd string) (*Package, error) {
+func ScanPackage(wd string) (*Package, error) {
 	var packageData Package // данные пакета
 
 	// загрузка конфигурации
