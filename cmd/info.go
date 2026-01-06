@@ -10,7 +10,7 @@ import (
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: " Package info",
+	Short: "Информация о конфигурации пакета (package.yml)",
 	Run: func(cmd *cobra.Command, args []string) {
 		// определение рабочей директории
 		wd, err := os.Getwd()

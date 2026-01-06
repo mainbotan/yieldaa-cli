@@ -12,7 +12,7 @@ import (
 
 var scanCmd = &cobra.Command{
 	Use:   "scan",
-	Short: "Scan package",
+	Short: "Сканирование сущностей пакета (/entities)",
 	Run: func(cmd *cobra.Command, args []string) {
 		// определение рабочей директории
 		wd, err := os.Getwd()
